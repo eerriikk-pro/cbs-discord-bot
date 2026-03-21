@@ -30,6 +30,13 @@ def _allowed_channels() -> set[int] | None:
     return {int(x.strip()) for x in raw.split(",") if x.strip()}
 
 
+def _allowed_guilds() -> set[int] | None:
+    raw = os.environ.get("ALLOWED_GUILD_IDS", "").strip()
+    if not raw:
+        return None
+    return {int(x.strip()) for x in raw.split(",") if x.strip()}
+
+
 def _build_client() -> discord.Client:
     intents = discord.Intents.default()
     intents.message_content = True
@@ -61,7 +68,8 @@ def run_bot() -> None:
     if not token:
         raise RuntimeError("DISCORD_TOKEN is not set.")
 
-    allowed = _allowed_channels()
+    allowed_channels = _allowed_channels()
+    allowed_guilds = _allowed_guilds()
     client = _build_client()
 
     @client.event
@@ -72,7 +80,10 @@ def run_bot() -> None:
     async def on_message(message: discord.Message) -> None:
         if message.author.bot:
             return
-        if allowed is not None and message.channel.id not in allowed:
+        if allowed_guilds is not None:
+            if message.guild is None or message.guild.id not in allowed_guilds:
+                return
+        if allowed_channels is not None and message.channel.id not in allowed_channels:
             return
 
         content = message.content or ""

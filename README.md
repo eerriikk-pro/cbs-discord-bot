@@ -41,7 +41,9 @@ cp .env.example .env
 # Edit .env with real values
 ```
 
-Optional: `ALLOWED_CHANNEL_IDS` — comma-separated channel IDs; if set, the bot only processes messages in those channels.
+Optional: `ALLOWED_GUILD_IDS` — comma-separated **server** (guild) IDs; if set, the bot ignores DMs and every other server. Enable Discord **Developer Mode**, then right‑click the server icon → **Copy Server ID**.
+
+Optional: `ALLOWED_CHANNEL_IDS` — comma-separated channel IDs; if set, the bot only processes messages in those channels (after the guild filter, if any).
 
 **Discord-only test (no Google Sheets):** set `CBSC_SHEETS_DRY_RUN=1` (or `SHEETS_DRY_RUN=1`). The bot still parses messages and reacts with a checkmark on success, but prints the **raw message** and **parsed row** to the terminal instead of calling Sheets.
 
