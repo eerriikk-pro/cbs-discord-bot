@@ -124,6 +124,10 @@ def run_bot() -> None:
                     parsed.day,
                     display_name,
                 )
+                try:
+                    await message.add_reaction("\U0001F504")  # counterclockwise arrows (cycle)
+                except (discord.Forbidden, discord.HTTPException):
+                    log.warning("Could not add duplicate reaction to message %s", message.id)
                 return
 
         if _sheets_dry_run():
