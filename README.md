@@ -6,6 +6,7 @@ Discord bot that reads [CluesBySam](https://cluesbysam.com/) score shares (messa
 
 - Messages **without** `#CluesBySam` are ignored.
 - On **success** (parsed and appended): reacts with a checkmark on the message.
+- **Duplicates (default):** if the sheet already has the same **Day** (column A) and **display name** (column B), the message is ignored (no checkmark, no new row). Disable with `CBSC_DEDUPE_SHEET=0`.
 - On **parse or Sheets failure**: posts a short error in a **thread** on that message (or replies if a thread cannot be created).
 
 ## Setup
@@ -46,6 +47,8 @@ Optional: `ALLOWED_GUILD_IDS` — comma-separated **server** (guild) IDs; if set
 Optional: `ALLOWED_CHANNEL_IDS` — comma-separated channel IDs; if set, the bot only processes messages in those channels (after the guild filter, if any).
 
 **Discord-only test (no Google Sheets):** set `CBSC_SHEETS_DRY_RUN=1` (or `SHEETS_DRY_RUN=1`). The bot still parses messages and reacts with a checkmark on success, but prints the **raw message** and **parsed row** to the terminal instead of calling Sheets.
+
+**Duplicate posts (on by default):** before appending, the bot reads **columns A and B** once per CluesBySam message and skips if a row already has that **day + display name**. Set `CBSC_DEDUPE_SHEET=0` (or `false` / `no` / `off`) to turn this off. **Speed:** usually fine for club-sized sheets; very large tabs can slow the extra read. Matching uses **display name** (column B), not Discord user id—if someone changes their server nickname, the sheet may not recognize their earlier row as the same person.
 
 ### 5. Run
 

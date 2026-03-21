@@ -9,7 +9,7 @@ import os
 import discord
 
 from cbs_parser import is_clues_by_sam_attempt, parse_clues_by_sam
-from sheets_client import append_score_row
+from sheets_client import append_score_row, sheet_has_row_for_day_and_name
 
 log = logging.getLogger(__name__)
 
@@ -21,6 +21,12 @@ def _sheets_dry_run() -> bool:
         .lower()
     )
     return v in ("1", "true", "yes", "on")
+
+
+def _sheet_dedupe_enabled() -> bool:
+    """Skip append when the sheet already has the same Day (A) + Name (B). On by default."""
+    v = os.environ.get("CBSC_DEDUPE_SHEET", "1").strip().lower()
+    return v not in ("0", "false", "no", "off")
 
 
 def _allowed_channels() -> set[int] | None:
@@ -97,6 +103,28 @@ def run_bot() -> None:
         except ValueError as e:
             await send_error_in_thread(message, f"Couldn’t read your score — {e}")
             return
+
+        if _sheet_dedupe_enabled():
+            try:
+                exists = await asyncio.to_thread(
+                    sheet_has_row_for_day_and_name,
+                    day=parsed.day,
+                    name=display_name,
+                )
+            except Exception:
+                log.exception("Sheet dedupe read failed")
+                await send_error_in_thread(
+                    message,
+                    "Couldn’t check the sheet for duplicates — please try again or ask an admin to check the bot logs.",
+                )
+                return
+            if exists:
+                log.info(
+                    "Ignoring duplicate score (sheet already has day=%r name=%r)",
+                    parsed.day,
+                    display_name,
+                )
+                return
 
         if _sheets_dry_run():
             print("--- CluesBySam (Sheets dry run) ---", flush=True)
