@@ -34,7 +34,12 @@ def append_score_row(
     sh = gc.open_by_key(sid)
     ws = sh.sheet1
     row = [day, name, difficulty, time, perfect, hints]
-    ws.append_row(row, value_input_option="USER_ENTERED")
+    # table_range=A:F so append never follows a mistaken “table” in other columns (e.g. I:N).
+    ws.append_row(
+        row,
+        value_input_option="USER_ENTERED",
+        table_range="A:F",
+    )
 
 
 def sheet_has_row_for_day_and_name(
